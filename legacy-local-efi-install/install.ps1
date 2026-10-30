@@ -165,7 +165,7 @@ function Install-NvPermissive {
     Write-Host "BCD backup     : $backup"
     Write-Host ""
     Write-Host "Reboot with Secure Boot disabled. The shell will run"
-    Write-Host "NVPermissiveEFI.efi pcie-gen2-x16 and then boot Windows."
+    Write-Host "NVPermissiveEFI.efi in x16 width mode, then boot Windows."
 }
 
 function Uninstall-NvPermissive {
