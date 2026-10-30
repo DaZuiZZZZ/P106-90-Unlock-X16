@@ -1,10 +1,11 @@
-# P106-090 本机 EFI 安装器（UEFI Shell 版）
+# P106-090 本机 EFI x16 安装器（UEFI Shell 版）
 
 `bcdedit /copy {bootmgr}` 创建的 BCD 条目不是可靠的固件 NVRAM 启动项。
 很多主板会显示这个名字，但不会真正把它当 UEFI Application 启动。
 
-这个版本改用 UEFI Shell 自带的 `bcfg boot add`，把真正的固件启动项写入
-NVRAM。
+这个版本改用 UEFI Shell 自带的 `bcfg boot addp`，把真正的固件启动项写入
+NVRAM。安装器执行的是 PCIe x16 宽度事务；命令名中的 `gen2` 是 NVPermissive
+二进制模式名，不代表本项目独立解锁 Gen2 速率。
 
 ## 第一次安装
 
@@ -22,7 +23,7 @@ NVRAM。
 复制 BOOTX64.EFI
 复制 NVPermissiveEFI.efi
 复制 startup.nsh 到 ESP 根目录和 \EFI\NVPermissive\
-bcfg boot add 0 ... "NVPermissive P106-090 x16"
+bcfg boot addp 0 ... "NVPermissive P106-090 x16"
 ```
 
 完成后：
@@ -50,7 +51,7 @@ Shell 扫描 fs0..fs9 并启动 Windows Boot Manager
 ```
 
 `startup.nsh` 同时放在 ESP 根目录和 `\EFI\NVPermissive\`，兼容不同主板
-Shell 的启动脚本搜索路径。
+Shell 的启动脚本搜索路径。启动时执行的是 x16 宽度事务，不承诺 Gen2 速率。
 
 ## 卸载
 
