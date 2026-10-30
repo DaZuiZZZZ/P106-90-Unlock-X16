@@ -4,7 +4,7 @@ echo ============================================================
 echo   NVPermissive P106-090 local x16 boot
 echo ============================================================
 echo
-echo Running NVPermissiveEFI with pcie-gen2-x16.
+echo Running NVPermissiveEFI in x16 width mode.
 echo
 \EFI\NVPermissive\NVPermissiveEFI.efi pcie-gen2-x16
 echo
