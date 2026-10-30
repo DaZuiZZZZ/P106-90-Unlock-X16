@@ -1,10 +1,10 @@
 @echo -off
 cls
 echo ============================================================
-echo   P106-090 persistent PCIe Gen2 x16 boot
+echo   P106-090 persistent PCIe x16 boot
 echo ============================================================
 echo
-echo Running NVPermissiveEFI with pcie-gen2-x16.
+echo Running NVPermissiveEFI in x16 width mode.
 echo Do not power off while this step is running.
 echo
 NVPermissiveEFI.efi pcie-gen2-x16
