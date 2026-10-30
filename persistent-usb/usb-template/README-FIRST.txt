@@ -1,9 +1,12 @@
-P106-090 persistent PCIe Gen2 x16 boot
+P106-090 persistent PCIe x16 boot
 =======================================
 
 This USB boots a UEFI Shell and automatically runs:
 
   NVPermissiveEFI.efi pcie-gen2-x16
+
+The argument pcie-gen2-x16 is the NVPermissive mode name.
+This project targets x16 link width, not a standalone Gen2 speed unlock.
 
 If the width transaction succeeds, the shell then searches
 fs0 through fs9 for:
