@@ -2,41 +2,48 @@
 
 ## 中文说明
 
-将 NVIDIA P106-90 / `10DE:1C09` 的 PCIe 链路从默认 `x4` 解锁到
-`Gen2 x16` 的 EFI 注入方案。
+将 NVIDIA P106-90 / `10DE:1C09` 的 PCIe 链路宽度从 `x4` 解锁到 `x16` 的
+UEFI EFI 注入方案。
 
-> 本项目会修改 Windows EFI System Partition 和固件启动顺序，并访问 GPU
-> 寄存器。请在可恢复平台测试，并保留 Windows 安装 U 盘作为恢复手段。
+> 本项目目标是 **PCIe x16 宽度解锁**，不独立承诺 Gen2 / Gen3 速率提升。
+> EFI 参数名 `pcie-gen2-x16` 是 NVPermissive 二进制自带的模式名；实际
+> 链路速率由 GPU、主板和当前训练状态共同决定。
+
+本项目会修改 Windows EFI System Partition 和固件启动顺序，并访问 GPU
+寄存器。请在可恢复平台测试，并保留 Windows 安装 U 盘作为恢复手段。
 
 ### 实测截图
 
-![GPU-Z shows PCIe x16 2.0 @ x16 2.0](assets/gpu-z-x16.png)
+![GPU-Z shows PCIe x16 @ x16](assets/gpu-z-x16.png)
 
-### 实测结果
+截图中的关键结果是：
 
 ```text
-GPU LnkCap = 0x00453d02  -> Gen2 x16
-GPU LnkSta = 0x1102      -> Gen2 x16
-RP  LnkCap = 0x0261ad03  -> Gen3 x16
-RP  LnkSta = 0xd102      -> Gen2 x16
+Bus Interface: PCIe x16 2.0 @ x16 2.0
 ```
 
-GPU-Z 显示：
+`@ x16` 才是本项目的目标，表示链路宽度已经达到 x16。速率字段只是当前
+链路状态，不作为本项目的独立解锁承诺。
+
+### 宽度证据
 
 ```text
-PCIe x16 2.0 @ x16 2.0
+GPU LnkCap = 0x00453d02  -> MAXWIDTH = 16
+GPU LnkSta = 0x1102      -> WIDTH = 16
+RP  LnkCap = 0x0261ad03  -> MAXWIDTH = 16
+RP  LnkSta = 0xd102      -> WIDTH = 16
 ```
 
 ### 原理
 
-开机时由 UEFI Shell 执行：
+开机时由 UEFI Shell 执行 NVPermissive 的宽度事务：
 
 ```text
 NVPermissiveEFI.efi pcie-gen2-x16
 ```
 
-EFI 对 P106-090 的 PCIe 宽度事务写寄存器并等待链路稳定。成功后，Shell 自动
-扫描并启动 Windows Boot Manager。
+命令名里带有 `gen2`，但本项目的目标是执行 P106-090 的 x16 宽度事务。
+成功后，Shell 自动扫描并启动 Windows Boot Manager。
 
 最终宽度仍取决于卡的 `LNKCAP.MAXWIDTH`、PCB lane 走线、AC 耦合电容、金手指
 触点、插槽 bifurcation 和根端口能力。EFI 不能补出物理上不存在的 lane。
@@ -46,7 +53,7 @@ EFI 对 P106-090 的 PCIe 宽度事务写寄存器并等待链路稳定。成功
 编译好的 EFI 和 UEFI Shell 不放在源码仓库，请从 Release 下载：
 
 ```text
-https://github.com/CheungGaman/P106-90-Unlock-X16/releases
+https://github.com/DaZuiZZZZ/P106-90-Unlock-X16/releases
 ```
 
 推荐资产：
@@ -72,7 +79,7 @@ NVPermissive P106-090 x16
 7. 关机，拔掉 U 盘，重启。
 8. 在 BIOS 中把 `NVPermissive P106-090 x16` 设为第一启动项。
 
-之后每次开机都会先解锁 x16，再进入 Windows。
+之后每次开机都会先执行 x16 宽度事务，再进入 Windows。
 
 ### 源码结构
 
@@ -81,8 +88,6 @@ NVPermissive P106-090 x16
 ├── README.md
 ├── assets/
 │   └── gpu-z-x16.png
-├── src/
-│   └── P106Gen2x4.cs
 ├── uefi-shell-installer/
 │   ├── make-installer-usb.cmd
 │   ├── usb-template/
@@ -111,10 +116,6 @@ NVPermissive P106-090 x16
     └── PCIe宽度与型号差异.md
 ```
 
-`legacy-local-efi-install/` 是早期基于 `bcdedit /copy {bootmgr}` 的方案，部分
-主板会显示启动项但不会真正启动 UEFI Shell。新安装请优先使用
-`uefi-shell-installer/`。
-
 ### 卸载
 
 进入 UEFI Shell：
@@ -138,14 +139,6 @@ bcfg boot rm 3
 
 删除 `\startup.nsh` 前确认它不是主板原有文件。
 
-### 校验
-
-Release 页面包含每个 zip 的 SHA256。下载后建议在 Windows 上运行：
-
-```powershell
-Get-FileHash -Algorithm SHA256 .\P106-090-x16-uefi-shell-installer.zip
-```
-
 ### 免责声明
 
 本项目仅用于研究和恢复自有硬件。错误操作可能导致无法启动、显卡掉卡或需要
@@ -155,35 +148,38 @@ Get-FileHash -Algorithm SHA256 .\P106-090-x16-uefi-shell-installer.zip
 
 ## English
 
-An EFI injection method that unlocks NVIDIA P106-90 / `10DE:1C09` from its
-default PCIe `x4` link to `Gen2 x16`.
+This project unlocks the NVIDIA P106-90 / `10DE:1C09` PCIe link **width**
+from `x4` to `x16` through a UEFI EFI injection.
 
-> This project modifies the Windows EFI System Partition and firmware boot
-> order, and accesses GPU registers. Test on a recoverable system and keep a
-> Windows installation USB for recovery.
+> The project's target is PCIe x16 width. It does not independently promise a
+> Gen2 or Gen3 speed upgrade. The `pcie-gen2-x16` argument is the mode name
+> exposed by the NVPermissive binary.
 
 ### Verified Screenshot
 
-![GPU-Z shows PCIe x16 2.0 @ x16 2.0](assets/gpu-z-x16.png)
+![GPU-Z shows PCIe x16 @ x16](assets/gpu-z-x16.png)
 
-### Verified Result
+The relevant result is:
 
 ```text
-GPU LnkCap = 0x00453d02  -> Gen2 x16
-GPU LnkSta = 0x1102      -> Gen2 x16
-RP  LnkCap = 0x0261ad03  -> Gen3 x16
-RP  LnkSta = 0xd102      -> Gen2 x16
+Bus Interface: PCIe x16 2.0 @ x16 2.0
 ```
 
-GPU-Z reports:
+`@ x16` is the project's target. The speed field only describes the current
+link state.
+
+### Width Evidence
 
 ```text
-PCIe x16 2.0 @ x16 2.0
+GPU LnkCap = 0x00453d02  -> MAXWIDTH = 16
+GPU LnkSta = 0x1102      -> WIDTH = 16
+RP  LnkCap = 0x0261ad03  -> MAXWIDTH = 16
+RP  LnkSta = 0xd102      -> WIDTH = 16
 ```
 
 ### How It Works
 
-The UEFI Shell runs the following at boot:
+The UEFI Shell runs the NVPermissive width transaction:
 
 ```text
 NVPermissiveEFI.efi pcie-gen2-x16
@@ -192,17 +188,16 @@ NVPermissiveEFI.efi pcie-gen2-x16
 The EFI application writes the P106-090 PCIe width transaction registers and
 waits for the link to stabilize. It then starts Windows Boot Manager.
 
-Final link width still depends on the card's `LNKCAP.MAXWIDTH`, PCB lane
-routing, AC coupling capacitors, PCIe edge contacts, slot bifurcation, and root
-port capability. EFI cannot create physical lanes that do not exist.
+Final width still depends on the card's `LNKCAP.MAXWIDTH`, PCB lane routing,
+AC coupling capacitors, PCIe edge contacts, slot bifurcation, and root port
+capability. EFI cannot create physical lanes that do not exist.
 
 ### Release Assets
 
-Prebuilt EFI and UEFI Shell binaries are not stored in the source repository.
-Download them from GitHub Releases:
+Prebuilt EFI and UEFI Shell binaries are not stored in the source repository:
 
 ```text
-https://github.com/CheungGaman/P106-90-Unlock-X16/releases
+https://github.com/DaZuiZZZZ/P106-90-Unlock-X16/releases
 ```
 
 Recommended assets:
@@ -228,27 +223,6 @@ NVPermissive P106-090 x16
 7. Power off, remove the USB drive, and reboot.
 8. Set `NVPermissive P106-090 x16` as the first boot entry in BIOS.
 
-Every cold boot will unlock x16 before starting Windows.
-
-### Repository Layout
-
-```text
-.
-├── README.md
-├── assets/
-│   └── gpu-z-x16.png
-├── src/
-│   └── P106Gen2x4.cs
-├── uefi-shell-installer/
-├── persistent-usb/
-├── legacy-local-efi-install/
-└── docs/
-```
-
-`legacy-local-efi-install/` is the earlier `bcdedit /copy {bootmgr}` approach.
-Some firmwares show that entry but do not launch it as a UEFI application. Prefer
-`uefi-shell-installer/` for new installations.
-
 ### Uninstall
 
 From UEFI Shell:
@@ -273,16 +247,8 @@ Then remove from the ESP:
 Confirm that `\startup.nsh` was not originally created by the motherboard before
 removing it.
 
-### Verification
-
-The Release page contains SHA256 values for each zip. On Windows, verify with:
-
-```powershell
-Get-FileHash -Algorithm SHA256 .\P106-090-x16-uefi-shell-installer.zip
-```
-
 ### Disclaimer
 
 This project is for research and recovery of hardware you own. Incorrect use may
 cause boot failure, GPU link loss, or BIOS recovery. Back up your system and
-accept the risk before using it.
+accept the risk before use.
