@@ -1,4 +1,4 @@
-# P106-090 x16 本机 EFI 安装
+# P106-090 PCIe x16 本机 EFI 安装
 
 这套脚本会把 UEFI Shell 和 `NVPermissiveEFI.efi` 写入 Windows 的 EFI System
 Partition，并通过 BCD 添加一个固件启动项。以后开机不需要 U 盘。
@@ -49,7 +49,8 @@ UEFI Shell 自动执行同目录的 `startup.nsh`：
 NVPermissiveEFI.efi pcie-gen2-x16
 ```
 
-成功后扫描并启动：
+`pcie-gen2-x16` 是二进制模式名；本项目目标是 x16 宽度，不独立承诺 Gen2
+速率。成功后扫描并启动：
 
 ```text
 \EFI\Microsoft\Boot\bootmgfw.efi
