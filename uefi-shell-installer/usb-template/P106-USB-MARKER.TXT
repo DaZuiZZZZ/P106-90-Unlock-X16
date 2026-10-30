@@ -1,0 +1,3 @@
+P106-090-UEFI-INSTALLER
+Do not remove this marker file.
+The installer uses it to identify the USB source filesystem.
