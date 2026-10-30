@@ -1,4 +1,4 @@
-# P106-090 x16 持久化 USB 启动方案
+# P106-090 PCIe x16 持久化 USB 启动方案
 
 ## 方案是什么
 
@@ -8,7 +8,8 @@
 NVPermissiveEFI.efi pcie-gen2-x16
 ```
 
-当 EFI 报告两端都稳定在 `Gen2 x16` 后，UEFI Shell 会自动扫描：
+其中 `pcie-gen2-x16` 是 NVPermissive 的模式名；本项目目标是 x16 宽度，
+不独立承诺 Gen2 速率。EFI 完成宽度事务后，UEFI Shell 会自动扫描：
 
 ```text
 fs0:\EFI\Microsoft\Boot\bootmgfw.efi
