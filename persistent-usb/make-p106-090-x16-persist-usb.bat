@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 chcp 65001 >nul 2>&1
-title Make P106-090 persistent PCIe Gen2 x16 USB
+title Make P106-090 persistent PCIe x16 USB
 cd /d "%~dp0"
 
 set "TEMPLATE=%~dp0usb-template"
@@ -15,7 +15,7 @@ set "FIXED_ARG="
 if "%ALLOW_FIXED%"=="1" set "FIXED_ARG=-AllowFixed"
 
 echo ============================================================
-echo   P106-090 persistent PCIe Gen2 x16 USB builder
+echo   P106-090 persistent PCIe x16 USB builder
 echo ============================================================
 echo.
 echo This script copies the UEFI Shell, NVPermissive EFI and an
@@ -104,7 +104,7 @@ echo ============================================================
 echo   Set this USB as the first UEFI boot device.
 echo   On every boot it will run:
 echo.
-echo     NVPermissiveEFI.efi pcie-gen2-x16
+echo     NVPermissiveEFI.efi pcie-gen2-x16  (x16 width mode)
 echo.
 echo   then automatically start Windows Boot Manager.
 echo   Secure Boot must be disabled.
